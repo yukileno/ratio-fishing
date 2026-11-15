@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>割合フィッシング</title>
+  <link rel="stylesheet" href="./fishing.css">
+  <script type="importmap">
+    {"imports":{"three":"./vendor/three.module.js","./utils/BufferGeometryUtils.js":"./vendor/BufferGeometryUtils.js"}}
+  </script>
+</head>
+<body>
+  <main>
+    <section class="world" aria-label="釣り場">
+      <div id="viewport"></div>
+      <div class="world-head"><div><h1>割合フィッシング</h1><h2 id="area-name"></h2></div><span id="streak" hidden></span></div>
+      <section class="quest" aria-label="目標">
+        <h2>⚑　クエスト</h2><p id="quest-text"></p><p id="quest-count"></p>
+      </section>
+      <div class="world-foot">
+        <p id="world-note">WASD・矢印キーで移動。桟橋に近づいて E キーで釣りを始めます。</p>
+        <button type="button" id="dock">桟橋へ移動</button>
+        <button type="button" id="fish-button">釣りを始める</button>
+      </div>
+      <div class="player-hud">
+        <p id="stats"></p>
+        <div class="xp-row"><progress id="xp-bar" max="100" value="0" aria-label="次のレベルまでの経験値"></progress><span id="xp-label"></span></div>
+      </div>
+      <div class="dpad" aria-label="移動ボタン">
+        <button type="button" data-move="ArrowUp" aria-label="前へ">↑</button>
+        <button type="button" data-move="ArrowLeft" aria-label="左へ">←</button>
+        <button type="button" data-move="ArrowDown" aria-label="後ろへ">↓</button>
+        <button type="button" data-move="ArrowRight" aria-label="右へ">→</button>
+      </div>
+    </section>
+    <nav class="hotbar" aria-label="ショートカット">
+      <button type="button" id="rod-slot"><kbd>1</kbd><span id="rod-slot-art"></span><span id="rod-name"></span></button>
+      <button type="button" data-view="inventory" aria-controls="drawer"><kbd>2</kbd><span class="hud-icon hud-inventory" aria-hidden="true"></span>魚かご</button>
+      <button type="button" data-view="collection" aria-controls="drawer" hidden><kbd>3</kbd><span class="hud-icon hud-collection" aria-hidden="true"></span>図鑑</button>
+      <button type="button" data-view="shop" aria-controls="drawer"><kbd>4</kbd><span class="hud-icon hud-shop" aria-hidden="true"></span>店</button>
+      <button type="button" data-view="map" aria-controls="drawer"><kbd>5</kbd><span class="hud-icon hud-map" aria-hidden="true"></span>地図</button>
+    </nav>
+    <aside id="drawer" hidden>
+      <button type="button" id="close-panel" aria-label="パネルを閉じる">✕</button>
+      <section id="panel" aria-label="図鑑"></section>
+    </aside>
+    <p id="notice" role="status"></p>
+    <a class="practice-link" href="./preview.html">問題プレビュー</a>
+  </main>
+  <dialog id="quiz" aria-labelledby="quiz-title">
+    <div class="dialog-head">
+      <h2 id="quiz-title">釣りチャレンジ</h2>
+      <div class="dialog-controls">
+        <button id="catch-sound" type="button" aria-label="釣果の効果音" aria-pressed="false">効果音 オフ</button>
+        <button id="close-quiz" type="button">釣り場へ戻る</button>
+      </div>
+    </div>
+    <div id="question-body">
+      <label>出題コース <select id="page"></select></label>
+      <div class="problem-lead">
+        <div><p id="problem-label"></p><p id="prompt"></p></div>
+        <span id="problem-art" aria-hidden="true"></span>
+      </div>
+      <div id="problem-table"></div>
+      <form id="answer-form">
+        <label id="number-label">答え <input id="answer" autocomplete="off"><span id="unit"></span></label>
+        <label id="choice-label" hidden>答え <select id="choice"></select></label>
+        <button type="submit" id="submit-answer">答える</button>
+      </form>
+    </div>
+    <div id="catch-art" hidden></div>
+    <p id="feedback" role="status"></p>
+    <div class="actions">
+      <button type="button" id="solution" hidden>解き方を見る</button>
+      <button type="button" id="next" hidden>次の問題</button>
+    </div>
+  </dialog>
+  <script type="module" src="./fishing-ui.mjs"></script>
+</body>
+</html>
