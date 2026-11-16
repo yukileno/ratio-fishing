@@ -37,7 +37,7 @@ main { position: relative; height: 100dvh; min-height: 400px; overflow: hidden; 
 .quest p { font-size: .87rem; font-weight: 750; }
 #quest-count { color: #ffe194; }
 .dpad { position: absolute; right: 15px; bottom: 95px; display: grid; grid-template-columns: repeat(3, 36px); gap: 4px; }
-.dpad button { min-height: 40px; padding: 0; background: #182236ee; }
+.dpad button { touch-action: none; user-select: none; -webkit-touch-callout: none; min-height: 40px; padding: 0; background: #182236ee; }
 .dpad button:first-child { grid-column: 2; }
 .dpad button:nth-child(2) { grid-column: 1; }
 button, select, input { font: inherit; }
@@ -100,7 +100,6 @@ ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .sale-confirm { margin-top: 12px; padding: 9px; background: #413522; border: 1px solid #a67b42; border-radius: 8px; }
 .sale-confirm button { margin: 7px 6px 0 0; }
-.practice-link { position: absolute; top: 15px; right: 15px; font-size: .78rem; background: #151917dc; color: white; padding: 5px 9px; border-radius: 7px; }
 a { color: #9cb8ff; }
 dialog { width: min(calc(100% - 24px), 660px); max-height: 90dvh; border: 1px solid #e0bd82; border-radius: 19px; color: inherit; background: linear-gradient(150deg, #1c4151, #102538 67%); padding: clamp(14px, 3.5vw, 24px); box-shadow: 0 20px 60px #0009, inset 0 0 0 5px #0f27354f; }
 dialog::backdrop { background: #061b28b8; }
@@ -179,4 +178,18 @@ form label { display: inline-flex; align-items: center; gap: 6px; margin-right: 
   .quest p { font-size: .72rem; }
   .dpad { bottom: 90px; right: 8px; }
   #notice:not(:empty) { top: 68px; }
+}
+
+@media (any-pointer: coarse) {
+  .dpad { grid-template-columns: repeat(3, 48px); }
+  .dpad button, .world-foot button, #submit-answer { min-height: 48px; }
+  .hotbar kbd { display: none; }
+  #answer, #choice { font-size: 16px; }
+}
+
+@media (any-pointer: coarse) and (max-height: 480px) {
+  .world-foot { bottom: 86px; }
+  .player-hud, .dpad { bottom: 76px; }
+  .hotbar button { height: 58px; }
+  .hotbar .hud-icon, #rod-slot-art { width: 30px; height: 30px; }
 }

@@ -1,10 +1,9 @@
 import { isCorrectAnswer } from './problem-generator.mjs'
-import { pages, recommendedProblems, generatePageProblem } from './page-problems.mjs'
+import { problemsForArea, generatePageProblem } from './page-problems.mjs'
 import { areas, fish, fishInArea, rods, rarityNames, areaOdds, newProgress, restoreProgress, level, collected, canVisit, canBuy, canCatch, catchFish, saleValue, sell } from './fishing-game.mjs'
 
 const get = id => document.getElementById(id)
 const quiz = get('quiz')
-const page = get('page')
 const answer = get('answer')
 const choice = get('choice')
 const storageKey = 'ratio-fishing-v1'
@@ -209,7 +208,7 @@ function render() {
       const condition = area.required ? `Lv ${area.level} ＋ ${areas[area.previous].name} ${area.required} 種` : '初めの釣り場'
       const travel = button(active ? '現在地' : unlocked ? '移動する' : '未解放', () => {
         if (canVisit(progress, area) && commit(s => { s.area = id }, area.name + 'に着きました。')) {
-          if (page.value === 'recommended') question = null
+          question = null
           world?.changeArea(id)
         }
       }, active || !unlocked)
@@ -352,12 +351,10 @@ function fingerprint(problem) {
 }
 
 function newQuestion() {
-  const mode = page.value
-  const key = mode === 'recommended' ? mode + progress.area : mode
+  const key = progress.area
   let bag = questionBags.get(key)
   if (!bag?.length) {
-    bag = [...(mode === 'recommended' ? recommendedProblems(progress.area)
-      : mode === 'all' ? Object.values(pages).flat() : pages[mode])]
+    bag = [...problemsForArea(key)]
     for (let i = bag.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
       const current = bag[i]
@@ -452,10 +449,6 @@ function meaningfulInput(problem, raw) {
   return /^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$|^\.\d+$/.test(amount)
 }
 
-page.add(new Option('ステージ別おすすめ', 'recommended'))
-page.add(new Option('割合 174〜185ページ', 'all'))
-for (const number of Object.keys(pages)) page.add(new Option(number + 'ページ', number))
-page.addEventListener('change', () => { streak = 0; renderStreak(); newQuestion(); focusQuestion() })
 get('answer-form').addEventListener('submit', event => {
   event.preventDefault()
   if (!question || question.done) return
@@ -514,7 +507,19 @@ get('rod-slot').addEventListener('click', () => {
   else { world?.goToDock(); get('fish-button').focus() }
 })
 for (const control of document.querySelectorAll('[data-move]')) {
-  control.addEventListener('click', () => world?.step(control.dataset.move))
+  control.addEventListener('pointerdown', event => {
+    if (!world || event.button !== 0) return
+    control.setPointerCapture(event.pointerId)
+    world.step(control.dataset.move)
+    world.moveWithPointer(event.pointerId, control.dataset.move)
+  })
+  for (const eventName of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+    control.addEventListener(eventName, event => world?.moveWithPointer(event.pointerId))
+  }
+  control.addEventListener('contextmenu', event => event.preventDefault())
+  control.addEventListener('click', event => {
+    if (event.detail === 0) world?.step(control.dataset.move)
+  })
 }
 for (const tab of document.querySelectorAll('[data-view]')) {
   tab.addEventListener('click', () => {
@@ -541,7 +546,10 @@ window.addEventListener('keydown', event => {
 function setDock(available) {
   dockReady = available
   get('fish-button').disabled = !available
-  get('world-note').textContent = available ? 'E キーで釣りを始める' : 'WASDで移動 · ドラッグまたはQ／Rで視点回転'
+  const touch = matchMedia('(any-pointer: coarse)').matches
+  get('world-note').textContent = touch
+    ? (available ? '「釣りを始める」をタップ' : '矢印を長押しで移動 · 画面をなぞって視点回転')
+    : (available ? 'E キーで釣りを始める' : 'WASDで移動 · ドラッグまたはQ／Rで視点回転')
 }
 
 setDock(false)

@@ -167,6 +167,7 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
   avatar.add(shadow)
   scene.add(landscape, avatar)
   const keys = new Set()
+  const pointerMoves = new Map()
   let nearDock
   let obstacles = []
   let buildings = []
@@ -610,7 +611,14 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
     keys.add(key)
   })
   window.addEventListener('keyup', event => keys.delete(event.key.length === 1 ? event.key.toLowerCase() : event.key))
-  window.addEventListener('blur', () => keys.clear())
+  function clearMovement() {
+    keys.clear()
+    pointerMoves.clear()
+  }
+  window.addEventListener('blur', clearMovement)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) clearMovement()
+  })
   const canvas = renderer.domElement
   let pointer
   canvas.addEventListener('pointerdown', event => {
@@ -651,8 +659,8 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
     previousTime = time
     let dx = 0
     let dz = 0
-    if (inputBlocked()) keys.clear()
-    for (const key of keys) {
+    if (inputBlocked()) clearMovement()
+    for (const key of new Set([...keys, ...pointerMoves.values()])) {
       dx += directions[key][0]
       dz += directions[key][1]
     }
@@ -687,6 +695,10 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
       cameraPosition.set(0, 4.75 + (zoom - 7.6) * .27, -6 + zoom)
       redraw = true
       updateDock()
+    },
+    moveWithPointer(id, key) {
+      if (key) pointerMoves.set(id, key)
+      else pointerMoves.delete(id)
     },
     step(key) {
       const [dx, dz] = directions[key]

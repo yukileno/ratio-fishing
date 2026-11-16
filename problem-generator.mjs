@@ -117,15 +117,15 @@ function quantity(n, reverse) {
 }
 
 export const problemTypes = Object.freeze([
-  { id: 'ratio', label: '割合を求める', pages: '174〜176' },
-  { id: 'compared', label: 'くらべる量を求める', pages: '177、179、181' },
-  { id: 'base', label: 'もとにする量を求める', pages: '178〜179、181' },
-  { id: 'percent', label: '小数と百分率', pages: '180' },
-  { id: 'buai', label: '歩合', pages: '182' },
-  { id: 'comparison', label: '割合でくらべる', pages: '183' },
-  { id: 'discount', label: '値引き', pages: '184〜185' },
-  { id: 'increase', label: '増量前の量', pages: '185' },
-  { id: 'tax', label: '消費税', pages: '185' },
+  { id: 'ratio', label: '割合を求める' },
+  { id: 'compared', label: 'くらべる量を求める' },
+  { id: 'base', label: 'もとにする量を求める' },
+  { id: 'percent', label: '小数と百分率' },
+  { id: 'buai', label: '歩合' },
+  { id: 'comparison', label: '割合でくらべる' },
+  { id: 'discount', label: '値引き' },
+  { id: 'increase', label: '増量前の量' },
+  { id: 'tax', label: '消費税' },
 ].map(Object.freeze))
 
 /** type を省略すると、全分野からランダムに1問を出題する。 */

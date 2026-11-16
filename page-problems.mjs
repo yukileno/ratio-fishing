@@ -1,30 +1,19 @@
 import { generateProblem, mentalMathPair } from './problem-generator.mjs'
 
-export const pages = {
-  174: [['応募状況を表でくらべる', 'capacity']],
-  175: [['定員の何倍か', 'ratio'], ['もとにする量を見つける', 'whichBase']],
-  176: [['全体に対する割合', 'part'], ['二つの組の人数をくらべる', 'groups'], ['残りの割合', 'remainingRate']],
-  177: [['くらべる量を求める', 'compared'], ['値上がり後のねだん', 'priceUp'], ['へった数を求める', 'decreaseAmount']],
-  178: [['もとにする量を求める', 'base'], ['値下がり前のねだん', 'priceBefore']],
-  179: [['式の□をうめる', 'equation'], ['答えを求める式を選ぶ', 'chooseExpression']],
-  180: [['代金がもとのねだんの何倍か', 'priceRatio'], ['小数と百分率の変換', 'percent']],
-  181: [['百分率からくらべる量を求める', 'percentPart'], ['百分率からもとにする量を求める', 'percentBase'], ['植えていない分の量', 'restPart']],
-  182: [['乗客は定員の何％か', 'bus'], ['小数・百分率・歩合の変換', 'buai']],
-  183: [['値上がりの割合をくらべる', 'comparison'], ['割合が同じ組を見つける', 'equalGrowth']],
-  184: [['値引き後の代金', 'sale'], ['二つの店の代金をくらべる', 'discountCompare']],
-  185: [['増量前の量', 'increase'], ['値引き前のねだん', 'original'], ['消費税込みの代金', 'tax'],
-    ['税込から税ぬきのねだん', 'taxBefore'], ['値引きしてから消費税', 'taxDiscount']],
-}
-
-const textbookProblems = Object.values(pages).flat()
-const foundations = [
+const stageProblems = [
   [['九九の掛け算', 'timesTable'], ['わり切れる割り算', 'exactDivision'], ['同じ数ずつの合計', 'groupsTotal']],
   [['同じ数ずつの合計', 'groupsTotal'], ['同じ数ずつ分ける', 'groupSize'], ['何組できるか', 'groupsCount'],
     ['何十の掛け算', 'tensTimes'], ['何十の割り算', 'tensDivide']],
   [['何十の掛け算', 'tensTimes'], ['何十の割り算', 'tensDivide'],
     ['もとにする量を見つける', 'whichBase'], ['定員の何倍か', 'ratio'], ['答えを求める式を選ぶ', 'chooseExpression']],
+  [['何倍かを求める', 'ratio'], ['全体に対する割合', 'part'], ['二つの量の比べ方', 'groups']],
+  [['くらべる量を求める', 'compared'], ['残りの割合', 'remainingRate'], ['減った数を求める', 'decreaseAmount']],
+  [['もとにする量を求める', 'base'], ['式の□をうめる', 'equation'], ['値下がり前のねだん', 'priceBefore']],
+  [['小数と百分率', 'percent'], ['百分率から量を求める', 'percentPart'], ['残りの量', 'restPart'], ['百分率から全体を求める', 'percentBase']],
+  [['歩合の変換', 'buai'], ['値引き後の代金', 'sale'], ['値上がり率の比較', 'equalGrowth'], ['割引後の価格比較', 'discountCompare']],
+  [['値引き前のねだん', 'original'], ['増量前の量', 'increase'], ['税ぬきのねだん', 'taxBefore'], ['値引きと消費税', 'taxDiscount']],
 ]
-export const recommendedProblems = area => foundations[area] ?? textbookProblems
+export const problemsForArea = area => stageProblems[area] ?? stageProblems[0]
 
 export function generatePageProblem(type, n) {
   const { base, percent, ratio, part, variant } = mentalMathPair(n)
