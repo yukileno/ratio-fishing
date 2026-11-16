@@ -506,6 +506,46 @@ get('rod-slot').addEventListener('click', () => {
   if (dockReady) openQuiz()
   else { world?.goToDock(); get('fish-button').focus() }
 })
+const stick = get('move-stick')
+let stickPointer
+function updateStick(event) {
+  const bounds = stick.getBoundingClientRect()
+  const radius = bounds.width / 3
+  const x = (event.clientX - bounds.left - bounds.width / 2) / radius
+  const y = (event.clientY - bounds.top - bounds.height / 2) / radius
+  const scale = Math.max(1, Math.hypot(x, y))
+  stick.firstElementChild.style.transform = `translate(${x / scale * radius}px, ${y / scale * radius}px)`
+  world?.setTouchMovement(x / scale, y / scale)
+}
+function releaseStick() {
+  if (stickPointer === undefined) return
+  const id = stickPointer
+  stickPointer = undefined
+  if (stick.hasPointerCapture(id)) stick.releasePointerCapture(id)
+  stick.firstElementChild.style.removeProperty('transform')
+  world?.setTouchMovement(0, 0)
+}
+stick.addEventListener('pointerdown', event => {
+  if (!world || stickPointer !== undefined || event.button !== 0) return
+  stickPointer = event.pointerId
+  stick.setPointerCapture(event.pointerId)
+  updateStick(event)
+})
+stick.addEventListener('pointermove', event => {
+  if (event.pointerId === stickPointer) updateStick(event)
+})
+for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+  stick.addEventListener(name, event => {
+    if (event.pointerId === stickPointer) releaseStick()
+  })
+}
+stick.addEventListener('contextmenu', event => event.preventDefault())
+window.addEventListener('blur', releaseStick)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) releaseStick()
+})
+quiz.addEventListener('close', releaseStick)
+
 for (const control of document.querySelectorAll('[data-move]')) {
   control.addEventListener('pointerdown', event => {
     if (!world || event.button !== 0) return
@@ -546,9 +586,9 @@ window.addEventListener('keydown', event => {
 function setDock(available) {
   dockReady = available
   get('fish-button').disabled = !available
-  const touch = matchMedia('(any-pointer: coarse)').matches
+  const touch = matchMedia('(pointer: coarse)').matches
   get('world-note').textContent = touch
-    ? (available ? '「釣りを始める」をタップ' : '矢印を長押しで移動 · 画面をなぞって視点回転')
+    ? (available ? '「釣りを始める」をタップ' : '左のスティックで移動 · 右側をなぞって視点回転')
     : (available ? 'E キーで釣りを始める' : 'WASDで移動 · ドラッグまたはQ／Rで視点回転')
 }
 
@@ -564,4 +604,5 @@ try {
   get('world-note').textContent = 'この環境では3Dを表示できません。釣り問題と持ち物は引き続き使えます。'
   get('dock').hidden = true
   document.querySelector('.dpad').hidden = true
+  stick.hidden = true
 }

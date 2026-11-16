@@ -168,6 +168,8 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
   scene.add(landscape, avatar)
   const keys = new Set()
   const pointerMoves = new Map()
+  let touchX = 0
+  let touchY = 0
   let nearDock
   let obstacles = []
   let buildings = []
@@ -614,6 +616,8 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
   function clearMovement() {
     keys.clear()
     pointerMoves.clear()
+    touchX = 0
+    touchY = 0
   }
   window.addEventListener('blur', clearMovement)
   document.addEventListener('visibilitychange', () => {
@@ -622,7 +626,11 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
   const canvas = renderer.domElement
   let pointer
   canvas.addEventListener('pointerdown', event => {
-    if (event.button !== 0 || pointer) return
+    if (event.button !== 0 || pointer || inputBlocked()) return
+    if (event.pointerType === 'touch') {
+      const bounds = canvas.getBoundingClientRect()
+      if (event.clientX < bounds.left + bounds.width / 2) return
+    }
     pointer = { id: event.pointerId, x: event.clientX }
     canvas.setPointerCapture(event.pointerId)
     canvas.classList.add('orbiting')
@@ -657,15 +665,15 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
   renderer.setAnimationLoop(time => {
     const dt = Math.min((time - previousTime) / 1000, 0.05)
     previousTime = time
-    let dx = 0
-    let dz = 0
     if (inputBlocked()) clearMovement()
+    let dx = touchX
+    let dz = touchY
     for (const key of new Set([...keys, ...pointerMoves.values()])) {
       dx += directions[key][0]
       dz += directions[key][1]
     }
     const length = Math.hypot(dx, dz)
-    if (length) move(dx / length * dt * 5.5, dz / length * dt * 5.5)
+    if (length) move(dx / Math.max(1, length) * dt * 5.5, dz / Math.max(1, length) * dt * 5.5)
     const height = standingHeight + (length && !reducedMotion.matches ? Math.abs(Math.sin(time / 85)) * 0.12 : 0)
     if (body.position.y !== height) {
       body.position.y = height
@@ -695,6 +703,10 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
       cameraPosition.set(0, 4.75 + (zoom - 7.6) * .27, -6 + zoom)
       redraw = true
       updateDock()
+    },
+    setTouchMovement(x, y) {
+      touchX = x
+      touchY = y
     },
     moveWithPointer(id, key) {
       if (key) pointerMoves.set(id, key)

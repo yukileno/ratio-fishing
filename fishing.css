@@ -36,6 +36,7 @@ main { position: relative; height: 100dvh; min-height: 400px; overflow: hidden; 
 .quest h2 { color: #ffe194; font-size: .98rem; }
 .quest p { font-size: .87rem; font-weight: 750; }
 #quest-count { color: #ffe194; }
+#move-stick { display: none; }
 .dpad { position: absolute; right: 15px; bottom: 95px; display: grid; grid-template-columns: repeat(3, 36px); gap: 4px; }
 .dpad button { touch-action: none; user-select: none; -webkit-touch-callout: none; min-height: 40px; padding: 0; background: #182236ee; }
 .dpad button:first-child { grid-column: 2; }
@@ -180,16 +181,42 @@ form label { display: inline-flex; align-items: center; gap: 6px; margin-right: 
   #notice:not(:empty) { top: 68px; }
 }
 
-@media (any-pointer: coarse) {
-  .dpad { grid-template-columns: repeat(3, 48px); }
-  .dpad button, .world-foot button, #submit-answer { min-height: 48px; }
+@media (pointer: coarse) {
+  .dpad { display: none; }
+  #move-stick:not([hidden]) {
+    position: absolute;
+    left: max(14px, env(safe-area-inset-left));
+    bottom: 93px;
+    display: grid;
+    place-items: center;
+    width: clamp(84px, 24vw, 116px);
+    aspect-ratio: 1;
+    border: 2px solid #d4f6ebaa;
+    border-radius: 50%;
+    background: #132c3ab0;
+    touch-action: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  #move-stick span {
+    width: 42%;
+    aspect-ratio: 1;
+    border: 1px solid #e1ffed;
+    border-radius: 50%;
+    background: #9dd8cbd9;
+    pointer-events: none;
+  }
+  .player-hud { left: auto; right: 8px; bottom: 105px; }
+  .world-foot { bottom: 222px; }
+  .world-foot button, #submit-answer { min-height: 48px; }
   .hotbar kbd { display: none; }
   #answer, #choice { font-size: 16px; }
 }
 
-@media (any-pointer: coarse) and (max-height: 480px) {
+@media (pointer: coarse) and (max-height: 480px) {
   .world-foot { bottom: 86px; }
-  .player-hud, .dpad { bottom: 76px; }
+  .player-hud, #move-stick:not([hidden]) { bottom: 76px; }
+  #move-stick:not([hidden]) { width: 84px; }
   .hotbar button { height: 58px; }
   .hotbar .hud-icon, #rod-slot-art { width: 30px; height: 30px; }
 }
