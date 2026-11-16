@@ -73,6 +73,7 @@ ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
 .item { display: flex; align-items: center; gap: 8px; min-width: 0; border: 1px solid #516d76; background: linear-gradient(145deg, #284858, #173042); border-radius: 9px; padding: 6px; }
 .item-info { flex: 1; overflow-wrap: anywhere; }
 .item small { display: block; line-height: 1.35; color: #bac9e0; }
+.item .shop-shortfall { color: #ffe3a7; }
 .item-info strong { font-size: .9rem; }
 .item button { flex-shrink: 0; font-size: .86rem; }
 .item input { width: 20px; height: 20px; }

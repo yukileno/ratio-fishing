@@ -188,6 +188,9 @@ function render() {
     for (const [id, rod] of rods.entries()) {
       const owned = progress.owned.includes(id)
       const equipped = progress.rod === id
+      const registered = collected(progress, rod.area)
+      const coinShortfall = Math.max(0, rod.price - progress.coins)
+      const fishShortfall = Math.max(0, rod.required - registered)
       const action = owned
         ? button(equipped ? '装備中' : '装備する', () => commit(s => { s.rod = id }, rod.name + 'を装備しました。'), equipped)
         : button(`${rod.price} コイン`, () => {
@@ -195,10 +198,20 @@ function render() {
             commit(s => { s.coins -= rod.price; s.owned.push(id) }, rod.name + 'を買いました。')
           }
         }, !canBuy(progress, rod))
-      const condition = owned ? '所持中' : `${areas[rod.area].name} ${collected(progress, rod.area)}/${rod.required} 種`
       const odds = areaOdds(progress, id).map((chance, rarity) => `${rarityNames[rarity]} ${percentFormat.format(chance)}%`).join(' · ')
       const tier = rod.odds[4] >= 3 ? 4 : rod.odds[4] >= 1.5 ? 3 : rod.odds[3] >= 2 ? 2 : id ? 1 : 0
-      list.append(item(rod.name, `${odds}｜${condition}`, action, icon('rod', id, tier)))
+      const row = item(rod.name, odds, action, icon('rod', id, tier))
+      if (!owned && rod.required > 0) {
+        row.querySelector('.item-info').append(make('small',
+          `購入条件　${areas[rod.area].name}の魚を図鑑に${rod.required}種類登録（現在${registered}種類）`))
+      }
+      const missing = []
+      if (!owned && coinShortfall) missing.push(`あと${coinShortfall}コイン`)
+      if (!owned && fishShortfall) missing.push(`図鑑にあと${fishShortfall}種類`)
+      if (missing.length) {
+        row.querySelector('.item-info').append(make('small', missing.join(' · '), 'shop-shortfall'))
+      }
+      list.append(row)
     }
   } else {
     list.className = 'area-list'
@@ -587,9 +600,9 @@ function setDock(available) {
   dockReady = available
   get('fish-button').disabled = !available
   const touch = matchMedia('(pointer: coarse)').matches
-  get('world-note').textContent = touch
-    ? (available ? '「釣りを始める」をタップ' : '左のスティックで移動 · 右側をなぞって視点回転')
-    : (available ? 'E キーで釣りを始める' : 'WASDで移動 · ドラッグまたはQ／Rで視点回転')
+  const note = get('world-note')
+  note.hidden = touch
+  note.textContent = available ? 'E キーで釣りを始める' : 'WASDで移動 · ドラッグまたはQ／Rで視点回転'
 }
 
 setDock(false)
@@ -601,6 +614,7 @@ try {
 } catch (error) {
   console.error(error)
   setDock(true)
+  get('world-note').hidden = false
   get('world-note').textContent = 'この環境では3Dを表示できません。釣り問題と持ち物は引き続き使えます。'
   get('dock').hidden = true
   document.querySelector('.dpad').hidden = true
