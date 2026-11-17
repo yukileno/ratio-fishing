@@ -9,6 +9,11 @@ const choice = get('choice')
 const storageKey = 'ratio-fishing-v1'
 const fishExpansions = ['fish-atlas-river', 'fish-atlas-frontier', 'fish-atlas-ocean']
 const areaAtlases = ['area-portraits', 'area-portraits-inland', 'area-portraits-ocean']
+const expeditionMapArt = [
+  ['🌫️', '#496b54'], ['🎋', '#406d45'], ['🌾', '#477e9f'],
+  ['🏝️', '#9e6c3a'], ['⚡', '#424f87'], ['🌅', '#a65d61'],
+  ['💎', '#583c84'], ['🌊', '#426982'], ['☀️', '#77518a'],
+]
 const problemArtCells = {
   capacity: 0, ratio: 1, part: 2, groups: 2, compared: 3, base: 3,
   priceUp: 4, priceBefore: 4, equation: 5, priceRatio: 4, percent: 6, percentPart: 7,
@@ -81,6 +86,14 @@ function button(label, action, disabled = false) {
 function icon(kind, id, rarity = 0) {
   const art = make('span', '', 'loot-art rarity-' + rarity)
   art.setAttribute('aria-hidden', 'true')
+  if (kind === 'fish' ? id >= 74 : id >= 15) {
+    const fishSymbols = ['🐟', '🐠', '🐡', '🦐', '🦀', '🦑', '🐙', '🐋']
+    const symbol = kind === 'fish' ? fishSymbols[id % fishSymbols.length] : '🎣'
+    const figure = make('span', symbol, 'expedition-loot')
+    figure.style.filter = `hue-rotate(${id * 37 % 360}deg)`
+    art.append(figure)
+    return art
+  }
   const sprite = make('span', '', kind + '-sprite')
   const [atlas, cols, rows, cell] = kind === 'fish'
     ? fish[id].unlockArea ? ['fish-atlas-milestones', 4, 2, fish[id].area]
@@ -229,8 +242,15 @@ function render() {
       card.classList.add('area-card')
       const art = make('span', '', 'area-art')
       const atlas = areaAtlases[Math.floor(id / 3)]
-      art.style.backgroundImage = `url("./assets/${atlas}.png")`
-      art.style.backgroundPositionY = id % 3 * 50 + '%'
+      if (atlas) {
+        art.style.backgroundImage = `url("./assets/${atlas}.png")`
+        art.style.backgroundPositionY = id % 3 * 50 + '%'
+      } else {
+        const [symbol, color] = expeditionMapArt[id - 9]
+        art.classList.add('expedition-area-art')
+        art.style.backgroundColor = color
+        art.textContent = symbol
+      }
       if (active) card.classList.add('area-current')
       art.setAttribute('aria-hidden', 'true')
       card.prepend(art)

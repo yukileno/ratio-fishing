@@ -11,6 +11,15 @@ const palettes = [
   { sky: 0xa0605e, land: 0x544859, edge: 0x382f3c, water: 0x59475f, path: 0x91736f, night: true },
   { sky: 0xaadce8, land: 0xe8cf9e, edge: 0x8bb5ab, water: 0x25adab, path: 0xf2dca5 },
   { sky: 0x262b61, land: 0x4d557c, edge: 0x282b4a, water: 0x355e9e, path: 0x8787ad, night: true },
+  { sky: 0xb7cbc0, land: 0x637e48, edge: 0x485e47, water: 0x567c69, path: 0xa9ae79, canopy: 0x486d54 },
+  { sky: 0xa6cdb1, land: 0x597447, edge: 0x455844, water: 0x368477, path: 0xc7b489, canopy: 0x507b37 },
+  { sky: 0xaad7ef, land: 0x94af61, edge: 0x72835d, water: 0x519ac2, path: 0xe7ca92 },
+  { sky: 0xf2d29a, land: 0xe0ba73, edge: 0xab794b, water: 0x4da895, path: 0xf6d9a0 },
+  { sky: 0x353c58, land: 0x536070, edge: 0x303848, water: 0x3b537d, path: 0x8a94a6, night: true },
+  { sky: 0xeb9d82, land: 0xc48c64, edge: 0x965e61, water: 0x596f9e, path: 0xf4bb8a },
+  { sky: 0x282443, land: 0x52516b, edge: 0x383144, water: 0x5265a0, path: 0xa398c6, night: true },
+  { sky: 0xc0d8de, land: 0x899098, edge: 0x616978, water: 0x357c99, path: 0xb7bcc1 },
+  { sky: 0x847298, land: 0x675c7a, edge: 0x453651, water: 0x494f8c, path: 0xc399aa },
 ]
 const directions = {
   ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
@@ -409,13 +418,14 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
     landscape.clear()
     const colors = palettes[index]
     const daylight = index !== 2 && !colors.night
-    scene.background = daylight && sky ? sky : new THREE.Color(colors.sky)
+    const areaSky = index < 9 ? sky : null
+    scene.background = daylight && areaSky ? areaSky : new THREE.Color(colors.sky)
     scene.backgroundRotation.y = index === 1 ? -.64 : .35 + index * .16
     sun.color.set(index === 6 ? 0xffab83 : daylight ? 0xffe4b6 : 0xaabfff)
     sun.intensity = daylight ? 2.35 : 1.45
     ambient.color.set(daylight ? 0xe2f5ff : 0xaac6ff)
     tree.traverse(mesh => { if (mesh.isMesh && mesh.material.name === 'leafsGreen') mesh.material.color.set(colors.canopy ?? 0x63a657) })
-    scene.fog = new THREE.Fog(colors.sky, 30, 112)
+    scene.fog = new THREE.Fog(colors.sky, index === 9 ? 13 : 30, index === 9 ? 64 : 112)
     water.tint.value.set(colors.water)
     const ground = (...args) => { box(...args).userData.generated = true }
     ground(40, 1.6, 25, colors.edge, 0, -1, 10.5)
@@ -485,7 +495,7 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
         landscape.add(modelAt(index === 2 ? rock : tree, 2.9 + j * .67, x - 3.6 + j * 2.7, z + j % 2, 1.15))
       }
     }
-    if (daylight && !sky) {
+    if (daylight && !areaSky) {
       for (let i = 0; i < 8; i++) {
         const x = -44 + i * 13
         const z = -47 - i % 3 * 6
@@ -508,7 +518,7 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
     obstacles = [[-7, 1], [8, 1], [-14, 4], [14, 7], [-9, 12], [9, 14], [-16, 17], [16, 18],
       [-7, 20], [6, 21], [-4, 7], [4.5, 8]]
     for (const [i, [x, z]] of obstacles.entries()) {
-      const isTree = [0,3,4,5].includes(index) && i < 10
+      const isTree = [0, 3, 4, 5, 9, 10, 11, 14].includes(index) && i < 10
       const height = isTree ? 2.7 + i % 3 : i > 9 ? 0.65 : 0.95 + i % 3 * 0.35
       landscape.add(modelAt(isTree ? tree : rock, height, x, z, terrainHeight(x,z)))
     }
@@ -556,7 +566,27 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
       glow.position.set(-4.2, 3.1, 11.7)
       landscape.add(glow)
     }
-    landmark(index, ground)
+    if (index < 9) {
+      landmark(index, ground)
+    } else {
+      const scenery = [
+        [0x768340, 11, .10, 1.4], [0x83a648, 14, .16, 3.2],
+        [0xf2ead0, 3, .32, 3.5], [0xe9a866, 7, .78, 1.3],
+        [0x8e9fda, 4, .24, 4.1], [0xffb173, 5, .65, 2.3],
+        [0xc9a8ff, 9, .45, 2.5], [0xc1cbd1, 7, 1.35, 3.8],
+        [0xffce98, 8, .65, 2.8],
+      ]
+      const [color, count, width, height] = scenery[index - 9]
+      for (let i = 0; i < count; i++) {
+        const x = (i % 2 ? 1 : -1) * (8 + i * 7 % 10)
+        const z = 8 + i * 5 % 14
+        const y = terrainHeight(x, z)
+        const size = height * (.65 + i % 4 * .16)
+        const accent = shape(new THREE.CylinderGeometry(width * .25, width, size, 5),
+          color, x, y + size / 2, z)
+        accent.rotation.z = (i % 3 - 1) * .12
+      }
+    }
     landscape.traverse(object => {
       if (!object.isMesh || object.userData.generated) return
       object.castShadow = true

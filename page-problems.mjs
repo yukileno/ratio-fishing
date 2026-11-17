@@ -12,6 +12,15 @@ const stageProblems = [
   [['小数と百分率', 'percent'], ['百分率から量を求める', 'percentPart'], ['残りの量', 'restPart'], ['百分率から全体を求める', 'percentBase']],
   [['歩合の変換', 'buai'], ['値引き後の代金', 'sale'], ['値上がり率の比較', 'equalGrowth'], ['割引後の価格比較', 'discountCompare']],
   [['値引き前のねだん', 'original'], ['増量前の量', 'increase'], ['税ぬきのねだん', 'taxBefore'], ['値引きと消費税', 'taxDiscount']],
+  [['全体に対する割合', 'part'], ['百分率から量を求める', 'percentPart'], ['残りの量', 'restPart']],
+  [['くらべる量を求める', 'compared'], ['もとにする量を求める', 'base'], ['百分率から全体を求める', 'percentBase']],
+  [['値上がり率の比較', 'equalGrowth'], ['増量前の量', 'increase'], ['式の□をうめる', 'equation']],
+  [['歩合の変換', 'buai'], ['値引き後の代金', 'sale'], ['割引後の価格比較', 'discountCompare']],
+  [['残りの割合', 'remainingRate'], ['減った数を求める', 'decreaseAmount'], ['値下がり前のねだん', 'priceBefore']],
+  [['値引き後の代金', 'sale'], ['値引き前のねだん', 'original'], ['税ぬきのねだん', 'taxBefore']],
+  [['答えを求める式を選ぶ', 'chooseExpression'], ['百分率から全体を求める', 'percentBase'], ['値引き前のねだん', 'original']],
+  [['割引後の価格比較', 'discountCompare'], ['値上がり率の比較', 'equalGrowth'], ['値引きと消費税', 'taxDiscount']],
+  [['値引き前のねだん', 'original'], ['増量前の量', 'increase'], ['割引後の価格比較', 'discountCompare'], ['値引きと消費税', 'taxDiscount']],
 ]
 export const problemsForArea = area => stageProblems[area] ?? stageProblems[0]
 

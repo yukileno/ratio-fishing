@@ -11,9 +11,20 @@ export const areas = [
   { name: 'ほむら火山港', level: 11, previous: 5, required: 5, species: ['サンマ', 'カサゴ', 'ウツボ', 'イセエビ', 'マグマフグ', '火花アンコウ', '緋色ガニ', '溶岩ドラゴンフィッシュ'] },
   { name: 'なないろ礁', level: 13, previous: 6, required: 6, species: ['クマノミ', 'デバスズメダイ', 'チョウチョウウオ', 'ヤドカリ', 'ナンヨウハギ', 'タツノオトシゴ', 'ナポレオンフィッシュ', '虹色マンタ'] },
   { name: '星夜の外洋', level: 15, previous: 7, required: 6, species: ['チョウチンハダカ', 'メギス', 'キンメダイ', 'ダイオウグソクムシ', 'メンダコ', 'ミズウオ', 'ホタルイカ', '星雲クジラ'] },
+  { name: '朝霧湿原', level: 16, previous: 8, required: 7, species: ['モツゴ', 'タイリクバラタナゴ', 'ギンブナ', 'スナヤツメ', 'ジュズカケハゼ', '霧羽グラミー', '銀露ライギョ', '朝霧オオナマズ'] },
+  { name: '竹影の水路', level: 18, previous: 9, required: 6, species: ['タモロコ', 'シマドジョウ', 'テナガエビ', 'カワバタモロコ', 'スゴモロコ', '竹節ハヤ', '青竹ベタ', '笹舟ニシキゴイ'] },
+  { name: '風車湖', level: 20, previous: 10, required: 6, species: ['ブルーギル', 'イエローパーチ', 'コクチバス', 'パンプキンシード', 'ブラウントラウト', '風切りバス', '白帆パーチ', '風車オオカワカマス'] },
+  { name: '琥珀の砂州', level: 22, previous: 11, required: 6, species: ['シロギス', 'ボラ', 'コチ', 'スナガニ', 'クロダイ', '琥珀ヒラメ', '金砂クロダイ', '砂紋エイ'] },
+  { name: '雷鳴の入江', level: 24, previous: 12, required: 6, species: ['サバ', 'カマス', 'サヨリ', 'ハコフグ', 'イシダイ', '雷光タチウオ', '稲妻シビレエイ', '雷鳴大ダコ'] },
+  { name: '夕映えの群島', level: 26, previous: 13, required: 6, species: ['トビウオ', 'メバル', 'カワハギ', 'アオリイカ', 'ブリ', '夕映えカツオ', '茜マダイ', '残照バショウカジキ'] },
+  { name: '鏡月の地底湖', level: 28, previous: 14, required: 6, species: ['ホトケドジョウ', 'メキシカンテトラ', 'ブラジルブラインドキャット', '洞窟エビ', 'グラスキャット', '薄月アロワナ', '鏡面ウナギ', '鏡月オオサンショウウオ'] },
+  { name: '白波の断崖', level: 30, previous: 15, required: 6, species: ['アイナメ', 'ソイ', 'ホッケ', 'イシガキダイ', 'クエ', '白波ヒラマサ', '断崖ギンザメ', '潮壁オオクチイシナギ'] },
+  { name: '暁光の深海', level: 32, previous: 16, required: 7, species: ['クロムツ', 'ギンメダイ', 'フウセンウナギ', 'デメニギス', 'メガマウス', '暁光オニキンメ', '曙ダイオウイカ', '太陽リュウグウノツカイ'] },
 ]
 
-const regularFish = areas.flatMap(({ species }, area) => {
+// Keep the original regular and milestone fish IDs in their saved order.
+const originalAreaCount = 9
+const regularFish = areas.slice(0, originalAreaCount).flatMap(({ species }, area) => {
   const normalCount = species.length === 6 ? 3 : 4
   return species.map((name, index) => ({
     area, name, rarity: area === 8 && index >= 6 ? (index === 7 ? 4 : 2)
@@ -25,9 +36,25 @@ const regularFish = areas.flatMap(({ species }, area) => {
 })
 const milestones = ['朝焼けメダカ', '潮風トビウオ', '紫晶ウーパールーパー', '滝しぶきマス',
   '紅葉ゴイ', '雪華イワナ', '黒曜スズキ', '真珠オウムガイ']
-export const fish = regularFish.concat(milestones.map((name, area) => ({
+const originalFish = regularFish.concat(milestones.map((name, area) => ({
   id: regularFish.length + area, area, name, rarity: area < 4 ? 3 : 4, label: rarityNames[area < 4 ? 3 : 4],
   price: (area < 4 ? 175 : 350) + area * 26, unlockArea: area + 1,
+})))
+const expeditionRarities = [0, 0, 0, 1, 1, 2, 3, 4]
+const expeditionFish = areas.slice(originalAreaCount).flatMap(({ species }, index) =>
+  species.map((name, slot) => {
+    const rarity = expeditionRarities[slot]
+    return {
+      area: originalAreaCount + index, name, rarity, label: rarityNames[rarity],
+      price: Math.round(prices[rarity] * (3.5 + index * .25)),
+    }
+  }))
+expeditionFish.push(
+  { area: 8, name: '航路のシーラカンス', rarity: 3, label: rarityNames[3], price: 595, unlockArea: 9 },
+  { area: 17, name: '黎明のオウゴンクジラ', rarity: 4, label: rarityNames[4], price: 1980 },
+)
+export const fish = originalFish.concat(expeditionFish.map((item, index) => ({
+  ...item, id: originalFish.length + index,
 })))
 export const fishInArea = areas.map((_, area) => fish.filter(item => item.area === area))
 
@@ -47,6 +74,21 @@ export const rods = [
   { name: '珊瑚の竿', price: 980, area: 7, required: 5, odds: [35, 36, 20, 7, 2] },
   { name: '深潮の竿', price: 340, area: 8, required: 4, odds: [47, 44, 7, 1.7, .3] },
   { name: '星図の竿', price: 1580, area: 8, required: 8, odds: [18, 44, 25, 9.5, 3.5] },
+  { name: '霧払いの竿', price: 940, area: 9, required: 3, odds: [70, 24, 5, .85, .15] },
+  { name: '露しずくの竿', price: 1740, area: 9, required: 6, odds: [20, 38, 29, 10, 3] },
+  { name: '青竹の竿', price: 1200, area: 10, required: 4, odds: [45, 42, 10, 2.5, .5] },
+  { name: '笹舟の竿', price: 1950, area: 10, required: 6, odds: [24, 28, 32, 12, 4] },
+  { name: '追い風の竿', price: 1480, area: 11, required: 4, odds: [31, 49, 14, 5, 1] },
+  { name: '風車の竿', price: 2160, area: 11, required: 7, odds: [19, 27, 37, 12, 5] },
+  { name: '砂金の竿', price: 1570, area: 12, required: 4, odds: [52, 33, 10, 4, 1] },
+  { name: '琥珀の竿', price: 2390, area: 12, required: 6, odds: [18, 26, 33, 17, 6] },
+  { name: '雷針の竿', price: 2560, area: 13, required: 6, odds: [18, 25, 29, 20, 8] },
+  { name: '夕帆の竿', price: 1880, area: 14, required: 4, odds: [35, 49, 11, 4, 1] },
+  { name: '茜雲の竿', price: 2780, area: 14, required: 6, odds: [17, 25, 27, 22, 9] },
+  { name: '鏡月の竿', price: 2980, area: 15, required: 6, odds: [16, 24, 30, 20, 10] },
+  { name: '白波の竿', price: 2250, area: 16, required: 4, odds: [56, 30, 10, 3, 1] },
+  { name: '断崖の竿', price: 3260, area: 16, required: 7, odds: [15, 23, 25, 24, 13] },
+  { name: '黎明の竿', price: 4200, area: 17, required: 8, odds: [12, 19, 23, 28, 18] },
 ]
 
 export function newProgress() {
