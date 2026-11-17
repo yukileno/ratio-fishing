@@ -603,7 +603,10 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
     if (inputBlocked() || event.altKey || event.ctrlKey || event.metaKey ||
         event.target?.closest?.('input, select, textarea')) return
     const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
-    if (key === 'e' && nearDock && !event.repeat) onFish()
+    if (key === 'e' && nearDock && !event.repeat) {
+      event.preventDefault()
+      onFish()
+    }
     if (key === 'q' || key === 'r') {
       heading += key === 'q' ? .2 : -.2
       redraw = true
