@@ -59,36 +59,36 @@ export const fish = originalFish.concat(expeditionFish.map((item, index) => ({
 export const fishInArea = areas.map((_, area) => fish.filter(item => item.area === area))
 
 export const rods = [
-  { name: 'はじめの竿', price: 0, area: 0, required: 0, odds: [75, 22, 2.6, .35, .05] },
-  { name: 'ねらい竿', price: 80, area: 0, required: 3, odds: [55, 35, 8.6, 1.2, .2] },
-  { name: '小魚の竿', price: 55, area: 0, required: 3, odds: [90, 9, .86, .12, .02] },
-  { name: '星ひれの竿', price: 190, area: 0, required: 6, odds: [40, 45, 12.2, 2.4, .4] },
-  { name: '月光の竿', price: 360, area: 1, required: 6, odds: [30, 45, 20.2, 4, .8] },
-  { name: '水晶の竿', price: 290, area: 2, required: 4, odds: [40, 36, 19.5, 3.8, .7] },
-  { name: '瀬なみの竿', price: 115, area: 3, required: 3, odds: [72, 24, 3.3, .6, .1] },
-  { name: '翡翠の竿', price: 400, area: 3, required: 6, odds: [31, 45, 19.1, 4.1, .8] },
-  { name: '紅葉の竿', price: 490, area: 4, required: 6, odds: [24, 52, 18.8, 4.2, 1] },
-  { name: '氷紋の竿', price: 235, area: 5, required: 4, odds: [56, 37, 5.7, 1.1, .2] },
-  { name: '極光の竿', price: 730, area: 5, required: 7, odds: [26, 44, 22, 6.5, 1.5] },
-  { name: '黒曜の竿', price: 870, area: 6, required: 6, odds: [20, 52, 19.5, 6.8, 1.7] },
-  { name: '珊瑚の竿', price: 980, area: 7, required: 5, odds: [35, 36, 20, 7, 2] },
-  { name: '深潮の竿', price: 340, area: 8, required: 4, odds: [47, 44, 7, 1.7, .3] },
-  { name: '星図の竿', price: 1580, area: 8, required: 8, odds: [18, 44, 25, 9.5, 3.5] },
-  { name: '霧払いの竿', price: 940, area: 9, required: 3, odds: [70, 24, 5, .85, .15] },
-  { name: '露しずくの竿', price: 1740, area: 9, required: 6, odds: [20, 38, 29, 10, 3] },
-  { name: '青竹の竿', price: 1200, area: 10, required: 4, odds: [45, 42, 10, 2.5, .5] },
-  { name: '笹舟の竿', price: 1950, area: 10, required: 6, odds: [24, 28, 32, 12, 4] },
-  { name: '追い風の竿', price: 1480, area: 11, required: 4, odds: [31, 49, 14, 5, 1] },
-  { name: '風車の竿', price: 2160, area: 11, required: 7, odds: [19, 27, 37, 12, 5] },
-  { name: '砂金の竿', price: 1570, area: 12, required: 4, odds: [52, 33, 10, 4, 1] },
-  { name: '琥珀の竿', price: 2390, area: 12, required: 6, odds: [18, 26, 33, 17, 6] },
-  { name: '雷針の竿', price: 2560, area: 13, required: 6, odds: [18, 25, 29, 20, 8] },
-  { name: '夕帆の竿', price: 1880, area: 14, required: 4, odds: [35, 49, 11, 4, 1] },
-  { name: '茜雲の竿', price: 2780, area: 14, required: 6, odds: [17, 25, 27, 22, 9] },
-  { name: '鏡月の竿', price: 2980, area: 15, required: 6, odds: [16, 24, 30, 20, 10] },
-  { name: '白波の竿', price: 2250, area: 16, required: 4, odds: [56, 30, 10, 3, 1] },
-  { name: '断崖の竿', price: 3260, area: 16, required: 7, odds: [15, 23, 25, 24, 13] },
-  { name: '黎明の竿', price: 4200, area: 17, required: 8, odds: [12, 19, 23, 28, 18] },
+  { name: 'はじめの竿', price: 0, area: 0, required: 0, odds: [75.36, 22.24, 2.08, 0.28, 0.04] },
+  { name: 'ねらい竿', price: 80, area: 0, required: 3, odds: [56.2, 35.8, 6.88, 0.96, 0.16] },
+  { name: '小魚の竿', price: 55, area: 0, required: 3, odds: [90.12, 9.08, 0.688, 0.096, 0.016] },
+  { name: '星ひれの竿', price: 190, area: 0, required: 6, odds: [41.8, 46.2, 9.76, 1.92, 0.32] },
+  { name: '月光の竿', price: 360, area: 1, required: 6, odds: [33, 47, 16.16, 3.2, 0.64] },
+  { name: '水晶の竿', price: 290, area: 2, required: 4, odds: [42.88, 37.92, 15.6, 3.04, 0.56] },
+  { name: '瀬なみの竿', price: 115, area: 3, required: 3, odds: [72.48, 24.32, 2.64, 0.48, 0.08] },
+  { name: '翡翠の竿', price: 400, area: 3, required: 6, odds: [33.88, 46.92, 15.28, 3.28, 0.64] },
+  { name: '紅葉の竿', price: 490, area: 4, required: 6, odds: [26.88, 53.92, 15.04, 3.36, 0.8] },
+  { name: '氷紋の竿', price: 235, area: 5, required: 4, odds: [56.84, 37.56, 4.56, 0.88, 0.16] },
+  { name: '極光の竿', price: 730, area: 5, required: 7, odds: [29.6, 46.4, 17.6, 5.2, 1.2] },
+  { name: '黒曜の竿', price: 870, area: 6, required: 6, odds: [23.36, 54.24, 15.6, 5.44, 1.36] },
+  { name: '珊瑚の竿', price: 980, area: 7, required: 5, odds: [38.48, 38.32, 16, 5.6, 1.6] },
+  { name: '深潮の竿', price: 340, area: 8, required: 4, odds: [48.08, 44.72, 5.6, 1.36, 0.24] },
+  { name: '星図の竿', price: 1580, area: 8, required: 8, odds: [22.56, 47.04, 20, 7.6, 2.8] },
+  { name: '霧払いの竿', price: 940, area: 9, required: 3, odds: [70.72, 24.48, 4, 0.68, 0.12] },
+  { name: '露しずくの竿', price: 1740, area: 9, required: 6, odds: [25.04, 41.36, 23.2, 8, 2.4] },
+  { name: '青竹の竿', price: 1200, area: 10, required: 4, odds: [46.56, 43.04, 8, 2, 0.4] },
+  { name: '笹舟の竿', price: 1950, area: 10, required: 6, odds: [29.76, 31.84, 25.6, 9.6, 3.2] },
+  { name: '追い風の竿', price: 1480, area: 11, required: 4, odds: [33.4, 50.6, 11.2, 4, 0.8] },
+  { name: '風車の竿', price: 2160, area: 11, required: 7, odds: [25.48, 31.32, 29.6, 9.6, 4] },
+  { name: '砂金の竿', price: 1570, area: 12, required: 4, odds: [53.8, 34.2, 8, 3.2, 0.8] },
+  { name: '琥珀の竿', price: 2390, area: 12, required: 6, odds: [24.72, 30.48, 26.4, 13.6, 4.8] },
+  { name: '雷針の竿', price: 2560, area: 13, required: 6, odds: [24.84, 29.56, 23.2, 16, 6.4] },
+  { name: '夕帆の竿', price: 1880, area: 14, required: 4, odds: [36.92, 50.28, 8.8, 3.2, 0.8] },
+  { name: '茜雲の竿', price: 2780, area: 14, required: 6, odds: [23.96, 29.64, 21.6, 17.6, 7.2] },
+  { name: '鏡月の竿', price: 2980, area: 15, required: 6, odds: [23.2, 28.8, 24, 16, 8] },
+  { name: '白波の竿', price: 2250, area: 16, required: 4, odds: [57.68, 31.12, 8, 2.4, 0.8] },
+  { name: '断崖の竿', price: 3260, area: 16, required: 7, odds: [22.44, 27.96, 20, 19.2, 10.4] },
+  { name: '黎明の竿', price: 4200, area: 17, required: 8, odds: [20.28, 24.52, 18.4, 22.4, 14.4] },
 ]
 
 export function newProgress() {
@@ -136,7 +136,7 @@ export function catchFish(state, random = Math.random, { retried = false } = {})
   const local = fishInArea[area].filter(item => canCatch(state, item))
   const unseen = local.filter(item => !state.collection.includes(item.id))
   const candidates = retried ? local.filter(item => item.rarity === 0)
-    : state.misses[area] >= 8 && unseen.length ? unseen : local
+    : state.misses[area] >= 10 && unseen.length ? unseen : local
   const { counts, odds } = rarityDistribution(local, rod)
   const weights = candidates.map(item => odds[item.rarity] / counts[item.rarity])
   let roll = random() * weights.reduce((total, weight) => total + weight, 0)
