@@ -27,6 +27,7 @@ get('code-form').addEventListener('submit', event => {
   if (result === 'owned') feedback.textContent = '秘宝の竿は受け取り済みです。'
   if (result === 'redeemed') {
     if (commit(state => redeemRod(state, get('reward-code').value), '秘宝の竿を手に入れ、装備しました！')) {
+      playTreasureFanfare()
       codeDialog.close()
     } else {
       feedback.textContent = '保存できませんでした。'
@@ -37,11 +38,6 @@ const choice = get('choice')
 const storageKey = 'ratio-fishing-v1'
 const fishExpansions = ['fish-atlas-river', 'fish-atlas-frontier', 'fish-atlas-ocean']
 const areaAtlases = ['area-portraits', 'area-portraits-inland', 'area-portraits-ocean']
-const expeditionMapArt = [
-  ['🌫️', '#496b54'], ['🎋', '#406d45'], ['🌾', '#477e9f'],
-  ['🏝️', '#9e6c3a'], ['⚡', '#424f87'], ['🌅', '#a65d61'],
-  ['💎', '#583c84'], ['🌊', '#426982'], ['☀️', '#77518a'],
-]
 const problemArtCells = {
   capacity: 0, ratio: 1, part: 2, groups: 2, compared: 3, base: 3,
   priceUp: 4, priceBefore: 4, equation: 5, priceRatio: 4, percent: 6, percentPart: 7,
@@ -114,18 +110,13 @@ function button(label, action, disabled = false) {
 function icon(kind, id, rarity = 0) {
   const art = make('span', '', 'loot-art rarity-' + rarity)
   art.setAttribute('aria-hidden', 'true')
-  if (kind === 'fish' ? id >= 74 : id >= 15) {
-    const fishSymbols = ['🐟', '🐠', '🐡', '🦐', '🦀', '🦑', '🐙', '🐋']
-    const symbol = kind === 'fish' ? fishSymbols[id % fishSymbols.length] : '🎣'
-    const figure = make('span', symbol, 'expedition-loot')
-    figure.style.filter = `hue-rotate(${id * 37 % 360}deg)`
-    art.append(figure)
-    return art
-  }
   const sprite = make('span', '', kind + '-sprite')
+  const addedFish = id - 74
   const [atlas, cols, rows, cell] = kind === 'fish'
-    ? fish[id].unlockArea ? ['fish-atlas-milestones', 4, 2, fish[id].area]
+    ? addedFish >= 0 ? [`expedition-fish-${Math.floor(addedFish / 16)}`, 4, 4, addedFish % 16]
+      : fish[id].unlockArea ? ['fish-atlas-milestones', 4, 2, fish[id].area]
       : id < 18 ? ['fish-atlas', 6, 3, id] : [fishExpansions[Math.floor((id - 18) / 16)], 4, 4, (id - 18) % 16]
+    : id >= 15 ? ['expedition-rods', 4, 4, id - 15]
     : id < 5 ? ['rod-atlas', 3, 2, id] : ['rod-atlas-expedition', 5, 2, id - 5]
   sprite.style.backgroundImage = `url("./assets/${atlas}.png")`
   sprite.style.backgroundSize = `${cols * 100}% ${rows * 100}%`
@@ -277,16 +268,9 @@ function render() {
       const card = item(area.name, condition, travel)
       card.classList.add('area-card')
       const art = make('span', '', 'area-art')
-      const atlas = areaAtlases[Math.floor(id / 3)]
-      if (atlas) {
-        art.style.backgroundImage = `url("./assets/${atlas}.png")`
-        art.style.backgroundPositionY = id % 3 * 50 + '%'
-      } else {
-        const [symbol, color] = expeditionMapArt[id - 9]
-        art.classList.add('expedition-area-art')
-        art.style.backgroundColor = color
-        art.textContent = symbol
-      }
+      const atlas = areaAtlases[Math.floor(id / 3)] ?? `expedition-areas-${Math.floor((id - 9) / 3)}`
+      art.style.backgroundImage = `url("./assets/${atlas}.png")`
+      art.style.backgroundPositionY = id % 3 * 50 + '%'
       if (active) card.classList.add('area-current')
       art.setAttribute('aria-hidden', 'true')
       card.prepend(art)
@@ -363,6 +347,41 @@ soundButton.addEventListener('click', async () => {
   }
 })
 
+async function playTreasureFanfare() {
+  if (!get('code-sound').checked) return
+  try {
+    catchSound ??= new AudioContext()
+    await catchSound.resume()
+    const now = catchSound.currentTime
+    const melody = [392, 523.25, 659.25, 783.99, 1046.5, 1318.51, 1567.98]
+    melody.forEach((frequency, index) => {
+      soundNote(frequency, now + index * .09, .29, .065, 'triangle')
+      soundNote(frequency * 2, now + index * .09, .19, .021, 'sine')
+    })
+    for (const frequency of [130.81, 261.63, 392, 523.25, 659.25, 783.99, 1046.5]) {
+      soundNote(frequency, now + .64, .95, .04, 'triangle')
+    }
+    for (const [index, frequency] of [2093, 2637, 3136, 4186].entries()) {
+      soundNote(frequency, now + .75 + index * .11, .36, .018, 'sine')
+    }
+  } catch {
+    // The reward is already saved if audio is unavailable.
+  }
+}
+
+function soundNote(frequency, start, duration, peak, type) {
+  const voice = catchSound.createOscillator()
+  const volume = catchSound.createGain()
+  voice.type = type
+  voice.frequency.value = frequency
+  volume.gain.setValueAtTime(.001, start)
+  volume.gain.exponentialRampToValueAtTime(peak, start + .018)
+  volume.gain.exponentialRampToValueAtTime(.001, start + duration - .01)
+  voice.connect(volume).connect(catchSound.destination)
+  voice.start(start)
+  voice.stop(start + duration)
+}
+
 function playCatchSound(rarity, leveledUp, isNew) {
   if (soundButton.getAttribute('aria-pressed') !== 'true' || catchSound?.state !== 'running') return
   const notes = isNew || rarity >= 3 ? [523, 659, 784, 988, 1047, 1319, 1568]
@@ -371,16 +390,7 @@ function playCatchSound(rarity, leveledUp, isNew) {
   const now = catchSound.currentTime
   for (const [index, frequency] of notes.entries()) {
     const start = now + index * .086
-    const voice = catchSound.createOscillator()
-    const volume = catchSound.createGain()
-    voice.type = 'sine'
-    voice.frequency.value = frequency
-    volume.gain.setValueAtTime(.001, start)
-    volume.gain.exponentialRampToValueAtTime(.048, start + .018)
-    volume.gain.exponentialRampToValueAtTime(.001, start + .24)
-    voice.connect(volume).connect(catchSound.destination)
-    voice.start(start)
-    voice.stop(start + .25)
+    soundNote(frequency, start, .25, .048, 'sine')
   }
 }
 

@@ -84,8 +84,6 @@ ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
 .loot-art.rarity-4 { border-color: #ffc2f2; background: conic-gradient(from 45deg, #743784, #2b6682, #a76372, #743784); }
 .shop-odds-note { font-size: .82rem; color: #c2e9e1; }
 .fish-sprite, .rod-sprite { display: block; width: 100%; height: 100%; border-radius: inherit; background-repeat: no-repeat; }
-.expedition-loot { font-size: 27px; line-height: 1; }
-#catch-art .expedition-loot { font-size: clamp(48px, 15vw, 78px); }
 .collection-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .collection-grid .item { display: block; padding: 5px 6px 8px; text-align: center; }
 .collection-grid .loot-art { width: 100%; height: 64px; margin-bottom: 4px; }
@@ -98,7 +96,6 @@ ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
 .area-card .item-info strong { font-size: 1.05rem; text-shadow: 0 1px 3px #001727; }
 .area-card small { color: #ecf8f6; }
 .area-art { position: absolute; z-index: -1; inset: 0; background-size: 100% 300%; }
-.expedition-area-art { display: grid; place-items: center; font-size: 42px; }
 .area-card.area-current { border-color: #ffe0a1; box-shadow: inset 0 0 0 1px #ffe0a1; }
 .area-card::after { content: ''; position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, #0d213adf, #102b3b7a 55%, #1426356e); }
 #notice:not(:empty) { position: absolute; left: 50%; top: 15px; transform: translateX(-50%); width: max-content; max-width: 60%; border-radius: 9px; background: #171c17e8; color: #fff3cb; padding: 7px 12px; font-size: .86rem; text-align: center; pointer-events: none; }
