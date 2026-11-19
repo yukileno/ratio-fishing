@@ -91,6 +91,17 @@ export const rods = [
   { name: '黎明の竿', price: 4200, area: 17, required: 8, odds: [20.28, 24.52, 18.4, 22.4, 14.4] },
 ]
 
+export const codeRodId = rods.length
+rods.push({ name: '秘宝の竿', odds: [11, 18, 20, 30, 21] })
+
+export function redeemRod(state, code) {
+  if (state.owned.includes(codeRodId)) return 'owned'
+  if (code.trim().toUpperCase() !== 'HOSHITSURI26') return 'invalid'
+  state.owned.push(codeRodId)
+  state.rod = codeRodId
+  return 'redeemed'
+}
+
 export function newProgress() {
   return {
     xp: 0, coins: 0, area: 0, rod: 0, owned: [0],
@@ -112,7 +123,7 @@ export const level = state => Math.floor(state.xp / 100) + 1
 export const collected = (state, area) => state.collection.filter(id => fish[id].area === area).length
 export const canVisit = (state, area) =>
   level(state) >= area.level && collected(state, area.previous) >= area.required
-export const canBuy = (state, rod) => state.coins >= rod.price && collected(state, rod.area) >= rod.required
+export const canBuy = (state, rod) => rod.price !== undefined && state.coins >= rod.price && collected(state, rod.area) >= rod.required
 export const canCatch = (state, item) => item.unlockArea === undefined || canVisit(state, areas[item.unlockArea])
 
 function rarityDistribution(local, rod) {

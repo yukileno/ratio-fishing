@@ -86,7 +86,7 @@ function modelAt(source, height, x, z, y = 0) {
   return model
 }
 
-export async function createWorld(container, { onDock, onFish, inputBlocked }) {
+export async function createWorld(container, { onDock, onFish, onShrine, openShrine, inputBlocked }) {
   const loader = new GLTFLoader()
   const names = ['character-a', 'bridge-center-wood', 'tree-oak', 'rock-largea', 'grass']
   const [person, bridge, tree, rock, grass] = await Promise.all(names.map(async name =>
@@ -408,7 +408,12 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
     }
   }
 
+  const shrine = { x: 18.5, z: 21 }
+  let hasShrine = false
+  let nearShrine = false
+
   function changeArea(index) {
+    hasShrine = index === 0
     landscape.traverse(object => {
       if (object.userData.generated) {
         object.geometry.dispose()
@@ -566,6 +571,13 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
       glow.position.set(-4.2, 3.1, 11.7)
       landscape.add(glow)
     }
+    if (hasShrine) {
+      const { x, z } = shrine
+      const y = terrainHeight(x, z)
+      ground(1.5, .24, 1.2, 0x48576a, x, y + .12, z)
+      ground(.78, 1.35, .44, 0x293f54, x, y + .8, z)
+      shape(new THREE.OctahedronGeometry(.32), 0x8ef5df, x, y + 1.64, z, 0x1c7668)
+    }
     if (index < 9) {
       landmark(index, ground)
     } else {
@@ -602,7 +614,13 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
   }
 
   function updateDock() {
-    const available = avatar.position.z < -4.1
+    const { x, z } = avatar.position
+    const atShrine = hasShrine && Math.hypot(x - shrine.x, z - shrine.z) < 2.3
+    if (atShrine !== nearShrine) {
+      nearShrine = atShrine
+      onShrine(atShrine)
+    }
+    const available = z < -4.1
     if (available !== nearDock) {
       nearDock = available
       onDock(available)
@@ -633,6 +651,12 @@ export async function createWorld(container, { onDock, onFish, inputBlocked }) {
     if (inputBlocked() || event.altKey || event.ctrlKey || event.metaKey ||
         event.target?.closest?.('input, select, textarea')) return
     const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
+    if (key === 'e' && nearShrine && !event.repeat) {
+      event.preventDefault()
+      keys.clear()
+      openShrine()
+      return
+    }
     if (key === 'e' && nearDock && !event.repeat) {
       event.preventDefault()
       onFish()

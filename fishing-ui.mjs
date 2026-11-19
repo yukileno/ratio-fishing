@@ -1,10 +1,38 @@
 import { isCorrectAnswer } from './problem-generator.mjs'
 import { problemsForArea, generatePageProblem } from './page-problems.mjs'
-import { areas, fish, fishInArea, rods, rarityNames, areaOdds, newProgress, restoreProgress, level, collected, canVisit, canBuy, canCatch, catchFish, saleValue, sell } from './fishing-game.mjs'
+import { areas, fish, fishInArea, rods, rarityNames, areaOdds, newProgress, restoreProgress, level, collected, canVisit, canBuy, canCatch, codeRodId, redeemRod, catchFish, saleValue, sell } from './fishing-game.mjs'
 
 const get = id => document.getElementById(id)
 const quiz = get('quiz')
 const answer = get('answer')
+const codeDialog = get('code-dialog')
+const shrineButton = get('code-shrine')
+
+function openCodeDialog() {
+  if (quiz.open || codeDialog.open || shrineButton.hidden) return
+  get('code-form').reset()
+  get('code-result').textContent = ''
+  codeDialog.showModal()
+  get('reward-code').focus()
+}
+
+shrineButton.addEventListener('click', openCodeDialog)
+get('code-close').addEventListener('click', () => codeDialog.close())
+get('code-form').addEventListener('submit', event => {
+  event.preventDefault()
+  if (shrineButton.hidden) return
+  const result = redeemRod(structuredClone(progress), get('reward-code').value)
+  const feedback = get('code-result')
+  if (result === 'invalid') feedback.textContent = 'あいことばがちがいます。'
+  if (result === 'owned') feedback.textContent = '秘宝の竿は受け取り済みです。'
+  if (result === 'redeemed') {
+    if (commit(state => redeemRod(state, get('reward-code').value), '秘宝の竿を手に入れ、装備しました！')) {
+      codeDialog.close()
+    } else {
+      feedback.textContent = '保存できませんでした。'
+    }
+  }
+})
 const choice = get('choice')
 const storageKey = 'ratio-fishing-v1'
 const fishExpansions = ['fish-atlas-river', 'fish-atlas-frontier', 'fish-atlas-ocean']
@@ -200,6 +228,14 @@ function render() {
     panel.append(make('p', `${areas[progress.area].name}での抽選確率（初回正解・通常抽選）`, 'shop-odds-note'))
     for (const [id, rod] of rods.entries()) {
       const owned = progress.owned.includes(id)
+      if (id === codeRodId) {
+        if (owned) {
+          const equipped = progress.rod === id
+          panel.append(item(rod.name, '石碑の景品', button(equipped ? '装備中' : '装備する',
+            () => commit(state => { state.rod = id }, rod.name + 'を装備しました。'), equipped), icon('rod', id)))
+        }
+        continue
+      }
       const equipped = progress.rod === id
       const registered = collected(progress, rod.area)
       const coinShortfall = Math.max(0, rod.price - progress.coins)
@@ -610,7 +646,7 @@ function closePanel() {
 }
 get('close-panel').addEventListener('click', closePanel)
 window.addEventListener('keydown', event => {
-  if (quiz.open || event.repeat || event.ctrlKey || event.metaKey || event.altKey ||
+  if (quiz.open || codeDialog.open || event.repeat || event.ctrlKey || event.metaKey || event.altKey ||
       event.target?.closest?.('input, select, textarea')) return
   if (event.key === 'Escape' && !drawer.hidden) closePanel()
   if (/^[1-5]$/.test(event.key)) shortcuts[Number(event.key) - 1].click()
@@ -629,7 +665,12 @@ setDock(false)
 render()
 try {
   const { createWorld } = await import('./fishing-world.mjs')
-  world = await createWorld(get('viewport'), { onDock: setDock, onFish: openQuiz, inputBlocked: () => quiz.open })
+  world = await createWorld(get('viewport'), {
+    onDock: setDock, onFish: openQuiz,
+    onShrine: near => { shrineButton.hidden = !near },
+    openShrine: openCodeDialog,
+    inputBlocked: () => quiz.open || codeDialog.open,
+  })
   world.changeArea(progress.area)
 } catch (error) {
   console.error(error)
