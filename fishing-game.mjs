@@ -92,7 +92,7 @@ export const rods = [
 ]
 
 export const codeRodId = rods.length
-rods.push({ name: '秘宝の竿', odds: [11, 18, 20, 30, 21] })
+rods.push({ name: '秘宝の竿', odds: [26, 36, 24, 10, 4] })
 
 const treasureDuration = 72 * 60 * 60 * 1000
 
