@@ -104,7 +104,7 @@ ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
 .sale-confirm button { margin: 7px 6px 0 0; }
 a { color: #9cb8ff; }
 dialog { width: min(calc(100% - 24px), 660px); max-height: 90dvh; border: 1px solid #e0bd82; border-radius: 19px; color: inherit; background: linear-gradient(150deg, #1c4151, #102538 67%); padding: clamp(14px, 3.5vw, 24px); box-shadow: 0 20px 60px #0009, inset 0 0 0 5px #0f27354f; }
-#code-shrine { position: fixed; z-index: 5; left: 50%; bottom: 125px; transform: translateX(-50%); }
+#code-shrine, #boat-button { position: fixed; z-index: 5; left: 50%; bottom: 125px; transform: translateX(-50%); }
 #code-form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 #reward-code { width: min(100%, 14em); }
 #code-result { width: 100%; }

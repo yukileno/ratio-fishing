@@ -7,6 +7,8 @@ const quiz = get('quiz')
 const answer = get('answer')
 const codeDialog = get('code-dialog')
 const shrineButton = get('code-shrine')
+const boatButton = get('boat-button')
+boatButton.addEventListener('click', () => world?.toggleBoat())
 
 function openCodeDialog() {
   if (quiz.open || codeDialog.open || shrineButton.hidden) return
@@ -21,8 +23,19 @@ get('code-close').addEventListener('click', () => codeDialog.close())
 get('code-form').addEventListener('submit', event => {
   event.preventDefault()
   if (shrineButton.hidden) return
-  const result = redeemRod(structuredClone(progress), get('reward-code').value)
+  const code = get('reward-code').value
   const feedback = get('code-result')
+  if (code.trim().toUpperCase() === 'SENCHO26') {
+    if (progress.boatKey) {
+      feedback.textContent = 'ボートの鍵は受け取り済みです。'
+    } else if (commit(state => { state.boatKey = true }, 'ボートの鍵を入手しました！ 桟橋のボートに乗れます。')) {
+      codeDialog.close()
+    } else {
+      feedback.textContent = '保存できませんでした。'
+    }
+    return
+  }
+  const result = redeemRod(structuredClone(progress), code)
   if (result === 'invalid') feedback.textContent = 'あいことばがちがいます。'
   if (result === 'owned') feedback.textContent = treasureRodActive(progress)
     ? '秘宝の竿は受け取り済みです。' : '秘宝の竿の有効期限が切れました。'
@@ -700,6 +713,13 @@ try {
     onDock: setDock, onFish: openQuiz,
     onShrine: near => { shrineButton.hidden = !near },
     openShrine: openCodeDialog,
+    hasBoatKey: () => progress.boatKey === true,
+    onBoat: (riding, near) => {
+      boatButton.hidden = !riding && !near
+      boatButton.disabled = !riding && !progress.boatKey
+      boatButton.textContent = riding ? '桟橋へ戻って降りる ［E］'
+        : progress.boatKey ? 'ボートに乗る ［E］' : 'ボートの鍵が必要'
+    },
     inputBlocked: () => quiz.open || codeDialog.open,
   })
   world.changeArea(progress.area)

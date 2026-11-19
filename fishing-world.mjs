@@ -86,7 +86,7 @@ function modelAt(source, height, x, z, y = 0) {
   return model
 }
 
-export async function createWorld(container, { onDock, onFish, onShrine, openShrine, inputBlocked }) {
+export async function createWorld(container, { onDock, onFish, onShrine, openShrine, onBoat, hasBoatKey, inputBlocked }) {
   const loader = new GLTFLoader()
   const names = ['character-a', 'bridge-center-wood', 'tree-oak', 'rock-largea', 'grass']
   const [person, bridge, tree, rock, grass] = await Promise.all(names.map(async name =>
@@ -238,6 +238,9 @@ export async function createWorld(container, { onDock, onFish, onShrine, openShr
   }
 
   function mooredBoat(x, z) {
+    const boat = new THREE.Group()
+    boat.position.set(x, 0, z)
+    const part = (geometry, color, y, offset = 0) => boat.add(shape(geometry, color, 0, y, offset))
     const outline = new THREE.Shape()
     outline.moveTo(-.95, -1.75)
     outline.lineTo(.95, -1.75)
@@ -250,13 +253,15 @@ export async function createWorld(container, { onDock, onFish, onShrine, openShr
     const hull = new THREE.ExtrudeGeometry(outline, {
       depth: .48, bevelEnabled: true, bevelThickness: .10, bevelSize: .14, bevelSegments: 1, steps: 1,
     }).rotateX(-Math.PI / 2)
-    shape(hull, 0x387897, x, -.35, z)
+    part(hull, 0x387897, -.35)
     const deck = new THREE.ShapeGeometry(outline).rotateX(-Math.PI / 2).scale(.86, 1, .9)
-    shape(deck, 0xa57448, x, .145, z)
+    part(deck, 0xa57448, .145)
     for (const dz of [-.77, .43]) {
-      shape(new THREE.BoxGeometry(1.76, .18, .36), 0xe0aa66, x, .3, z + dz)
+      part(new THREE.BoxGeometry(1.76, .18, .36), 0xe0aa66, .3, dz)
     }
-    shape(new THREE.BoxGeometry(.85, .44, .65), 0x574432, x, .36, z + 1.52)
+    part(new THREE.BoxGeometry(.85, .44, .65), 0x574432, .36, 1.52)
+    landscape.add(boat)
+    return boat
   }
 
   function boulder(x, y, z, sx, sy, sz, color) {
@@ -412,7 +417,39 @@ export async function createWorld(container, { onDock, onFish, onShrine, openShr
   let hasShrine = false
   let nearShrine = false
 
+  const berth = { x: 4.3, z: -8.2 }
+  let playerBoat
+  let riding = false
+  const boardingPoint = { x: 1.55, z: -8.2 }
+
+  function canBoard() {
+    return playerBoat && Math.hypot(avatar.position.x - boardingPoint.x, avatar.position.z - boardingPoint.z) < 2.1
+  }
+
+  function dockBoat() {
+    riding = false
+    playerBoat.position.set(berth.x, 0, berth.z)
+    playerBoat.rotation.y = 0
+    avatar.position.set(boardingPoint.x, groundHeight(boardingPoint.x, boardingPoint.z), boardingPoint.z)
+    redraw = true
+    updateDock()
+  }
+
+  function toggleBoat() {
+    if (inputBlocked()) return
+    if (riding) {
+      dockBoat()
+    } else if (canBoard() && hasBoatKey()) {
+      riding = true
+      avatar.position.copy(playerBoat.position)
+      avatar.position.y = .4
+      updateDock()
+      redraw = true
+    }
+  }
+
   function changeArea(index) {
+    riding = false
     hasShrine = index === 0
     landscape.traverse(object => {
       if (object.userData.generated) {
@@ -485,7 +522,7 @@ export async function createWorld(container, { onDock, onFish, onShrine, openShr
     }
     if (index <= 1 || index >= 7) {
       mooredBoat(-6.9, -10.6)
-      mooredBoat(6.5, -6.25)
+
     }
     for (let i = 0; i < 4; i++) {
       const x = (i % 2 === 0 ? 1 : -1) * (23 + i * 5)
@@ -605,6 +642,7 @@ export async function createWorld(container, { onDock, onFish, onShrine, openShr
       object.receiveShadow = true
     })
     renderer.shadowMap.needsUpdate = true
+    playerBoat = mooredBoat(berth.x, berth.z)
     avatar.position.set(0, groundHeight(0, 5), 5)
     avatar.rotation.y = Math.PI
     heading = 0
@@ -620,7 +658,8 @@ export async function createWorld(container, { onDock, onFish, onShrine, openShr
       nearShrine = atShrine
       onShrine(atShrine)
     }
-    const available = z < -4.1
+    onBoat(riding, !riding && Boolean(canBoard()))
+    const available = !riding && z < -4.1
     if (available !== nearDock) {
       nearDock = available
       onDock(available)
@@ -633,6 +672,18 @@ export async function createWorld(container, { onDock, onFish, onShrine, openShr
     const dx = horizontal * cos + forward * sin
     const dz = forward * cos - horizontal * sin
     avatar.rotation.y = Math.atan2(dx, dz)
+    if (riding) {
+      const p = playerBoat.position
+      const canSail = (x, z) => Math.abs(x) < 40 && z < -4.5 && z > -44 &&
+        (z < -13 || Math.abs(x) > 3.55) &&
+        (x > 0 || x < -16 || z < -9)
+      if (canSail(p.x + dx * 1.65, p.z)) p.x += dx * 1.65
+      if (canSail(p.x, p.z + dz * 1.65)) p.z += dz * 1.65
+      playerBoat.rotation.y = avatar.rotation.y + Math.PI
+      avatar.position.set(p.x, .4, p.z)
+      redraw = true
+      return
+    }
     function canWalk(x, z) {
       return Math.abs(x) <= 19.6 && z <= 22.6 && z >= -9.8 &&
         (z >= -1.9 || Math.abs(x) <= 2.05 || (x >= -14.2 && x < 0 && Math.abs(z + 6) <= 1.24)) &&
@@ -655,6 +706,12 @@ export async function createWorld(container, { onDock, onFish, onShrine, openShr
       event.preventDefault()
       keys.clear()
       openShrine()
+      return
+    }
+    if (key === 'e' && (riding || (canBoard() && hasBoatKey())) && !event.repeat) {
+      event.preventDefault()
+      keys.clear()
+      toggleBoat()
       return
     }
     if (key === 'e' && nearDock && !event.repeat) {
@@ -753,7 +810,9 @@ export async function createWorld(container, { onDock, onFish, onShrine, openShr
   })
   return {
     changeArea,
+    toggleBoat,
     goToDock() {
+      if (riding) dockBoat()
       avatar.position.set(0, groundHeight(0, -6), -6)
       avatar.rotation.y = Math.PI
       heading = 0
