@@ -1,6 +1,6 @@
 import { isCorrectAnswer } from './problem-generator.mjs'
 import { problemsForArea, generatePageProblem } from './page-problems.mjs'
-import { areas, fish, fishInArea, rods, rarityNames, areaOdds, newProgress, restoreProgress, level, collected, canVisit, canBuy, canCatch, codeRodId, redeemRod, catchFish, saleValue, sell } from './fishing-game.mjs'
+import { areas, fish, fishInArea, rods, rarityNames, areaOdds, newProgress, restoreProgress, level, collected, canVisit, canBuy, canCatch, codeRodId, redeemRod, treasureRodActive, expireTreasureRod, catchFish, saleValue, sell } from './fishing-game.mjs'
 
 const get = id => document.getElementById(id)
 const quiz = get('quiz')
@@ -24,7 +24,8 @@ get('code-form').addEventListener('submit', event => {
   const result = redeemRod(structuredClone(progress), get('reward-code').value)
   const feedback = get('code-result')
   if (result === 'invalid') feedback.textContent = 'あいことばがちがいます。'
-  if (result === 'owned') feedback.textContent = '秘宝の竿は受け取り済みです。'
+  if (result === 'owned') feedback.textContent = treasureRodActive(progress)
+    ? '秘宝の竿は受け取り済みです。' : '秘宝の竿の有効期限が切れました。'
   if (result === 'redeemed') {
     if (commit(state => redeemRod(state, get('reward-code').value), '秘宝の竿を手に入れ、装備しました！')) {
       playTreasureFanfare()
@@ -75,7 +76,13 @@ const shortcuts = [...document.querySelectorAll('.hotbar button')]
 
 try {
   const saved = localStorage.getItem(storageKey)
-  if (saved) progress = restoreProgress(JSON.parse(saved))
+  if (saved) {
+    const previous = JSON.parse(saved)
+    progress = restoreProgress(previous)
+    if (progress.treasureExpiresAt !== previous?.treasureExpiresAt || progress.rod !== previous?.rod) {
+      localStorage.setItem(storageKey, JSON.stringify(progress))
+    }
+  }
 } catch {
   get('notice').textContent = '保存データを読み込めませんでした。'
 }
@@ -83,6 +90,7 @@ try {
 function updateProgress(change) {
   const updated = structuredClone(progress)
   const result = change(updated)
+  expireTreasureRod(updated)
   try {
     localStorage.setItem(storageKey, JSON.stringify(updated))
   } catch {
@@ -135,7 +143,15 @@ function item(title, detail, action, art) {
   return row
 }
 
+let treasureTimer
+const expiryFormat = new Intl.DateTimeFormat('ja-JP', { dateStyle: 'short', timeStyle: 'short' })
+
 function render() {
+  expireTreasureRod(progress)
+  clearTimeout(treasureTimer)
+  const remaining = progress.treasureExpiresAt - Date.now()
+  if (remaining > 0) treasureTimer = setTimeout(render, remaining)
+
   get('stats').textContent = `Lv ${level(progress)}　·　${progress.xp} XP　·　${progress.coins} コイン`
   get('xp-bar').value = progress.xp % 100
   get('xp-label').textContent = `${progress.xp % 100} / 100`
@@ -222,8 +238,13 @@ function render() {
       if (id === codeRodId) {
         if (owned) {
           const equipped = progress.rod === id
-          panel.append(item(rod.name, '石碑の景品', button(equipped ? '装備中' : '装備する',
-            () => commit(state => { state.rod = id }, rod.name + 'を装備しました。'), equipped), icon('rod', id)))
+          const active = treasureRodActive(progress)
+          const detail = active ? `有効期限 ${expiryFormat.format(progress.treasureExpiresAt)}` : '有効期限切れ'
+          const action = active ? button(equipped ? '装備中' : '装備する', () => {
+            if (treasureRodActive(progress)) commit(state => { state.rod = id }, rod.name + 'を装備しました。')
+            else render()
+          }, equipped) : null
+          panel.append(item(rod.name, detail, action, icon('rod', id)))
         }
         continue
       }

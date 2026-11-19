@@ -94,10 +94,21 @@ export const rods = [
 export const codeRodId = rods.length
 rods.push({ name: '秘宝の竿', odds: [11, 18, 20, 30, 21] })
 
-export function redeemRod(state, code) {
+const treasureDuration = 72 * 60 * 60 * 1000
+
+export function treasureRodActive(state, now = Date.now()) {
+  return state.owned.includes(codeRodId) && state.treasureExpiresAt > now
+}
+
+export function expireTreasureRod(state, now = Date.now()) {
+  if (state.rod === codeRodId && !treasureRodActive(state, now)) state.rod = 0
+}
+
+export function redeemRod(state, code, now = Date.now()) {
   if (state.owned.includes(codeRodId)) return 'owned'
   if (code.trim().toUpperCase() !== 'HOSHITSURI26') return 'invalid'
   state.owned.push(codeRodId)
+  state.treasureExpiresAt = now + treasureDuration
   state.rod = codeRodId
   return 'redeemed'
 }
@@ -109,14 +120,19 @@ export function newProgress() {
   }
 }
 
-export function restoreProgress(saved) {
+export function restoreProgress(saved, now = Date.now()) {
   const defaults = newProgress()
   if (!saved || typeof saved !== 'object') return defaults
-  return {
+  const state = {
     ...defaults, ...saved,
     inventory: defaults.inventory.map((_, index) => saved.inventory?.[index] ?? 0),
     misses: defaults.misses.map((_, index) => saved.misses?.[index] ?? 0),
   }
+  if (state.owned.includes(codeRodId) && !Number.isFinite(state.treasureExpiresAt)) {
+    state.treasureExpiresAt = now + treasureDuration
+  }
+  expireTreasureRod(state, now)
+  return state
 }
 
 export const level = state => Math.floor(state.xp / 100) + 1
@@ -143,6 +159,7 @@ export function areaOdds(state, rod) {
 }
 
 export function catchFish(state, random = Math.random, { retried = false } = {}) {
+  expireTreasureRod(state)
   const { area, rod, xp } = state
   const local = fishInArea[area].filter(item => canCatch(state, item))
   const unseen = local.filter(item => !state.collection.includes(item.id))
